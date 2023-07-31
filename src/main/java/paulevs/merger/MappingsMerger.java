@@ -196,7 +196,7 @@ public class MappingsMerger {
 				.sorted(Comparator.comparing(m -> m.methodName))
 				.forEach(m -> builder.append(m.asString(innerTabs)));
 			
-			children.forEach(child -> {
+			children.stream().sorted(Comparator.comparing(c -> c.className)).forEach(child -> {
 				builder.append(child.asString(innerTabs));
 				builder.append('\n');
 			});
