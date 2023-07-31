@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -93,7 +92,14 @@ public class MappingsMerger {
 			parts = line.split(" ");
 			
 			switch (parts[0]) {
-				case "CLASS" -> mapping.children.add(getMapping(lines, index));
+				case "CLASS" -> {
+					ClassMapping nestedClass = getMapping(lines, index);
+					ClassMapping contained = mapping.nested.get(parts[1]);
+					if (contained != null) {
+						nestedClass = mergeClasses(contained, nestedClass);
+					}
+					mapping.nested.put(parts[1], nestedClass);
+				}
 				case "FIELD" -> mapping.fieldMappings.put(parts[1], line);
 				case "METHOD" -> {
 					activeMethod = new MethodMapping(parts[1], line);
@@ -123,7 +129,7 @@ public class MappingsMerger {
 		String className = a.classMapping.equals(a.className) ? b.classMapping : a.classMapping;
 		ClassMapping result = new ClassMapping(a.className, className);
 		
-		mergeSets(a.children, b.children, result.children);
+		mergeMaps(a.nested, b.nested, result.nested);
 		mergeMaps(a.fieldMappings, b.fieldMappings, result.fieldMappings);
 		
 		a.methodsMappings.forEach((name, mapping1) -> {
@@ -159,8 +165,7 @@ public class MappingsMerger {
 		
 		final Map<String, String> fieldMappings = new HashMap<>();
 		final Map<String, MethodMapping> methodsMappings = new HashMap<>();
-		
-		final Set<ClassMapping> children = new HashSet<>();
+		final Map<String, ClassMapping> nested = new HashMap<>();
 		
 		ClassMapping(String className, String classMapping) {
 			this.className = className;
@@ -196,10 +201,16 @@ public class MappingsMerger {
 				.sorted(Comparator.comparing(m -> m.methodName))
 				.forEach(m -> builder.append(m.asString(innerTabs)));
 			
-			children.stream().sorted(Comparator.comparing(c -> c.className)).forEach(child -> {
-				builder.append(child.asString(innerTabs));
+			nested.values().stream().sorted(Comparator.comparing(c -> c.className)).forEach(child ->
+				builder.append(child.asString(innerTabs))
+			);
+			
+			if (tabs > 0 && builder.charAt(builder.length() - 1) == '\n') {
+				builder.deleteCharAt(builder.length() - 1);
+			}
+			else if (tabs == 0 && builder.charAt(builder.length() - 1) != '\n') {
 				builder.append('\n');
-			});
+			}
 			
 			return builder.toString();
 		}
