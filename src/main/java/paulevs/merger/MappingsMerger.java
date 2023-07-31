@@ -205,13 +205,6 @@ public class MappingsMerger {
 				builder.append(child.asString(innerTabs))
 			);
 			
-			if (tabs > 0 && builder.charAt(builder.length() - 1) == '\n') {
-				builder.deleteCharAt(builder.length() - 1);
-			}
-			else if (tabs == 0 && builder.charAt(builder.length() - 1) != '\n') {
-				builder.append('\n');
-			}
-			
 			return builder.toString();
 		}
 	}
