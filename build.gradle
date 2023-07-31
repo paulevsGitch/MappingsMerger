@@ -1,0 +1,20 @@
+plugins {
+	id "java"
+	id "application"
+}
+
+group "paulevs.merger"
+version "0.1.0"
+
+repositories {
+	mavenCentral()
+}
+
+jar {
+	//noinspection GroovyAssignabilityCheck
+	manifest {
+		attributes "Implementation-Title": "MappingsMerger",
+				"Implementation-Version": this.version,
+				"Main-Class": "paulevs.merger.MappingsMerger"
+	}
+}
